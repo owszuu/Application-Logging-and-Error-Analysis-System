@@ -1,0 +1,17 @@
+from config import get_db
+
+def watch_logs():
+    db = get_db()
+    logs = db["logs"]
+    print("Nasłuchiwanie nowych logów\n")
+
+    try:
+        with logs.watch([{"$match": {"operationType": "insert"}}]) as stream:
+            for change in stream:
+                log = change["fullDocument"]
+                print(f"[{log['timestamp'].strftime('%H:%M:%S')}] {log['service']:<25} {log['level']:<10} {log['message']}")
+    except KeyboardInterrupt:
+        print("\nZatrzymano")
+
+if __name__ == "__main__":
+    watch_logs()

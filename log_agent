@@ -1,0 +1,66 @@
+import random
+import time
+from config import get_db
+from datetime import datetime, timezone
+
+
+# Symulowane mikroserwisy
+SERVICES = ["auth-service", "payment-service", "api-gateway", "user-service", "notification-service"]
+
+# Poziomy logów z wagami (ERROR rzadziej, INFO najczęściej)
+LEVELS = ["INFO", "INFO", "INFO", "WARNING", "WARNING", "ERROR"]
+
+# Przykładowe wiadomości dla każdego poziomu
+MESSAGES = {
+    "INFO": [
+        "User logged in successfully",
+        "Request processed in 120ms",
+        "Cache refreshed",
+        "Health check passed",
+        "Connection established",
+    ],
+    "WARNING": [
+        "Response time exceeded 500ms",
+        "Memory usage above 80%",
+        "Retry attempt 2/3",
+        "Deprecated endpoint called",
+        "High traffic detected",
+    ],
+    "ERROR": [
+        "Database connection timeout",
+        "Payment processing failed",
+        "Unhandled exception in request",
+        "Service unavailable",
+        "Authentication token expired",
+    ]
+}
+
+def generate_log():
+    """Generuje jeden losowy log."""
+    level = random.choice(LEVELS)
+    return {
+        "timestamp": datetime.now(timezone.utc),
+        "service": random.choice(SERVICES),
+        "level": level,
+        "message": random.choice(MESSAGES[level]),
+        "host": f"server-{random.randint(1, 5):02d}",
+        "environment": random.choice(["production", "production", "staging"])
+    }
+
+def run_agent():
+    #Wysyła logi do MongoDB co 2 sekundy
+    db = get_db()
+    logs = db["logs"]
+    print("Agent uruchomiony — wysyłam logi co 2 sekundy (Ctrl+C żeby zatrzymać)\n")
+
+    try:
+        while True:
+            log = generate_log()
+            logs.insert_one(log)
+            print(f"[{log['timestamp'].strftime('%H:%M:%S')}] {log['service']:<25} {log['level']:<10} {log['message']}")
+            time.sleep(2)
+    except KeyboardInterrupt:
+        print("\nAgent zatrzymany")
+
+if __name__ == "__main__":
+    run_agent()

@@ -1,0 +1,27 @@
+from pymongo import MongoClient, ASCENDING
+from config import get_db
+
+def setup_database():
+    db = get_db()
+
+    #  Capped Collection - kolekcja logs o rozmiarze max 10 MB i 10000 dokumentów gdzie trafiają wszystkie logi ze wszystkich serwisów
+    if "logs" not in db.list_collection_names():
+        db.create_collection(
+            "logs",
+            capped=True,
+            size=10 * 1024 * 1024,  # 10MB
+            max=10000               # maksymalnie 10000 dokumentów
+        )
+        print("utworzono capped collection")
+    else:
+        print("Kolekcja 'logs' już istnieje")
+
+    # TTL Index - usuwa logi starsze niż 30 dni
+    db["logs"].create_index(
+        [("timestamp", ASCENDING)],
+        expireAfterSeconds=30 * 24 * 60 * 60  # w sekundach
+    )
+    print("TL Index na polu 'timestamp' utworzony (30 dni)")
+
+if __name__ == "__main__":
+    setup_database()

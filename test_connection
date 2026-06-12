@@ -1,0 +1,12 @@
+from config import get_db
+
+try:
+    db = get_db()
+    print("Kolekcje w bazie:", db.list_collection_names())
+    print("działa")
+    logs = db["logs"]
+    for log in logs.find().sort("timestamp", -1).limit(1):
+        print(log)
+except Exception as e:
+    print("Błąd połączenia:", e)
+
