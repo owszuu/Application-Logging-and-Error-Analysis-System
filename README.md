@@ -1,3 +1,7 @@
-backend start - uvicorn api.main:app --reload --port 9000
+backend start - 
 
-frontend w folderze frontend - npm run dev  
+uvicorn api.main:app --port 9000
+
+frontend w folderze frontend - 
+
+npm run dev  
